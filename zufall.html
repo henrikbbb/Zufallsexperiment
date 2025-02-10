@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zufallsexperiment</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { width: 50%; margin: 20px auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 10px; }
+        button { margin: 10px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Zufallsexperiment</h1>
+    <label for="experiment">Experiment wählen:</label>
+    <select id="experiment">
+        <option value="coin">Münzwurf</option>
+        <option value="dice">Würfel</option>
+    </select>
+	<br>
+    <br>
+	<br>
+    <label for="count">Anzahl der Versuche:</label>
+    <input type="number" id="count" min="1" value="1">
+    <br>
+    <button onclick="runExperiment()">Experiment durchführen</button>
+    <button onclick="resetExperiment()">Zurücksetzen</button>
+	<br>
+	<br>
+	<p>Gesamte Durchgänge: <span id="totalCount">0</span></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Ergebnis</th>
+                <th>Häufigkeit</th>
+            </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+    <script>
+		 var mySelect = document.getElementById('experiment');
+		 mySelect.onchange = (event) => {
+			 resetExperiment()
+		 }
+		
+        let totalFrequencies = {};
+        let totalCount = 0;
+
+        async function runExperiment() {
+            let experimentType = document.getElementById("experiment").value;
+            let count = parseInt(document.getElementById("count").value);
+            let resultsTable = document.getElementById("results");
+            let totalCountDisplay = document.getElementById("totalCount");
+
+            if (experimentType === "coin") {
+                totalFrequencies["Kopf"] = totalFrequencies["Kopf"] || 0;
+                totalFrequencies["Zahl"] = totalFrequencies["Zahl"] || 0;
+            } else {
+                for (let i = 1; i <= 6; i++) {
+                    totalFrequencies[i] = totalFrequencies[i] || 0;
+                }
+            }
+            
+            for (let i = 0; i < count; i++) {
+                let result = experimentType === "coin" ? (Math.random() < 0.5 ? "Kopf" : "Zahl") : Math.floor(Math.random() * 6) + 1;
+                totalFrequencies[result]++;
+				totalCount++;
+                
+                updateResultsTable();
+				if (count > 1000 && Math.random() > 1000/count) {
+					continue;
+				}
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+
+        function updateResultsTable() {
+            let resultsTable = document.getElementById("results");
+            resultsTable.innerHTML = "";
+            for (let key in totalFrequencies) {
+                let row = resultsTable.insertRow();
+                row.insertCell(0).innerText = key;
+                row.insertCell(1).innerText = totalFrequencies[key];
+            }
+			
+			let totalCountDisplay = document.getElementById("totalCount");
+			totalCountDisplay.innerText = totalCount;
+        }
+
+        function resetExperiment() {
+            document.getElementById("results").innerHTML = "";
+            document.getElementById("totalCount").innerText = "0";
+            totalFrequencies = {};
+            totalCount = 0;
+        }
+    </script>
+</body>
+</html>
